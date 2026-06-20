@@ -1,0 +1,4 @@
+AI RAG Mini is a learning project for building end-to-end AI applications.
+It has a FastAPI backend, a browser frontend, document upload, chunking, retrieval, and optional LLM answer generation.
+The first version uses a local TF-IDF vector search store so the RAG flow is easy to understand before adding a production vector database.
+Future upgrades include pgvector, authentication, chat history, evaluation, Docker deployment, and agent tools.
