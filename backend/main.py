@@ -6,13 +6,15 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from .rag import UPLOAD_DIR, answer_with_llm, clear_store, ingest_document, list_documents, search
+from .pipeline import RagPipeline, serialize_steps
+from .rag import UPLOAD_DIR, clear_store, list_documents
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 app = FastAPI(title="AI RAG Mini", version="0.1.0")
+rag_pipeline = RagPipeline()
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,11 +59,14 @@ async def upload(file: UploadFile = File(...)) -> dict[str, object]:
     destination.write_bytes(await file.read())
 
     try:
-        document = ingest_document(destination, safe_name)
+        result = rag_pipeline.ingest(destination, safe_name)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return {"document": document}
+    return {
+        "document": result.document,
+        "pipeline_steps": serialize_steps(result.pipeline_steps),
+    }
 
 
 @app.post("/api/ask")
@@ -70,9 +75,12 @@ async def ask(payload: AskRequest) -> dict[str, object]:
     if not question:
         raise HTTPException(status_code=400, detail="Question is required.")
 
-    sources = search(question, top_k=payload.top_k)
-    answer = await answer_with_llm(question, sources)
-    return {"answer": answer, "sources": sources}
+    result = await rag_pipeline.answer(question, top_k=payload.top_k)
+    return {
+        "answer": result.answer,
+        "sources": result.sources,
+        "pipeline_steps": serialize_steps(result.pipeline_steps),
+    }
 
 
 @app.delete("/api/documents")

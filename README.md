@@ -50,6 +50,7 @@ ai-rag-mini/
   backend/
     __init__.py
     main.py        # FastAPI app and API routes
+    pipeline.py    # RAG pipeline orchestration layer
     rag.py         # document ingestion, retrieval, and LLM calls
   frontend/
     index.html     # app UI
@@ -62,6 +63,7 @@ ai-rag-mini/
   sample_document.txt
   README.md
   ARCHITECTURE.md
+  RAG_PIPELINE.md
 ```
 
 ## Installation
@@ -209,3 +211,5 @@ DELETE /api/documents    clear local document index
 ## Architecture
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the system design, request flow, and component-level explanation.
+
+See [RAG_PIPELINE.md](RAG_PIPELINE.md) for the implementation-focused RAG pipeline guide and interview explanation.
