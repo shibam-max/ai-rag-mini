@@ -1,215 +1,99 @@
-# AI RAG Mini
+# Evident AI
 
-AI RAG Mini is a small end-to-end Retrieval-Augmented Generation application. It lets a user upload a document, ask questions about it, retrieve the most relevant document chunks, and generate an answer using a local Llama model through Ollama.
+Evident AI is a local-first, evidence-grounded knowledge workspace. Upload a PDF, Markdown file, or text document, ask a question, and inspect the retrieved passages behind the answer. It is a small but complete RAG product prototype designed to demonstrate applied AI engineering: ingestion, retrieval, provider abstraction, grounded generation, a usable product surface, and a credible path to AWS.
 
-This project is intentionally simple so the complete AI application flow is easy to understand before upgrading to production tools like real embedding models, `pgvector`, Chroma, Qdrant, authentication, and cloud deployment.
+## What This Prototype Demonstrates
 
-## Problem It Solves
+- End-to-end RAG: upload, parse, chunk, retrieve, augment, generate, and cite.
+- Local operation with Ollama and Llama; no cloud account is required.
+- An optional OpenAI provider boundary.
+- Evidence snippets and retrieval scores with every answer.
+- Useful local fallback answers when no model runtime is available.
+- File-type and size validation, randomized upload filenames, and controlled CORS.
+- Docker packaging for reproducible local development and future deployment.
 
-Most documents are hard to search manually. Resumes, reports, policies, PDFs, meeting notes, and technical guides often contain useful information, but users need to read through the whole file to find answers.
+## Quick Start
 
-AI RAG Mini solves this by:
-
-- Uploading a document.
-- Breaking it into searchable chunks.
-- Finding the most relevant chunks for a user question.
-- Sending only those chunks to an LLM.
-- Returning an answer with the supporting source text.
-
-This is the foundation behind real-world AI products like support bots, resume analyzers, legal document assistants, internal knowledge-base chat, and codebase onboarding agents.
-
-## Features
-
-- Upload `.txt`, `.md`, and `.pdf` documents.
-- Extract readable text from uploaded files.
-- Split documents into overlapping chunks.
-- Store chunks in a local JSON-backed retrieval store.
-- Search chunks using a simple TF-IDF similarity algorithm.
-- Answer questions using local Llama through Ollama.
-- Optional OpenAI provider support.
-- Show retrieved source snippets in the UI.
-- Serve frontend and backend from one FastAPI app.
-
-## Technology Used
-
-| Area | Technology | Why It Is Used |
-| --- | --- | --- |
-| Backend API | FastAPI | Lightweight Python API framework for upload and chat endpoints |
-| Frontend | HTML, CSS, JavaScript | Simple browser UI without extra build tooling |
-| PDF Parsing | pypdf | Extracts text from uploaded PDF files |
-| Retrieval | TF-IDF + cosine similarity | Simple local retrieval method for learning RAG concepts |
-| Local LLM | Ollama + Llama | Runs Llama locally without paid API keys |
-| Optional Cloud LLM | OpenAI API | Alternative hosted LLM provider |
-| Storage | Local JSON file | Keeps the first version easy to inspect and debug |
-| HTTP Client | httpx | Calls Ollama from the backend |
-
-## Project Structure
-
-```text
-ai-rag-mini/
-  backend/
-    __init__.py
-    main.py        # FastAPI app and API routes
-    pipeline.py    # RAG pipeline orchestration layer
-    rag.py         # document ingestion, retrieval, and LLM calls
-  frontend/
-    index.html     # app UI
-    styles.css     # app styling
-    app.js         # upload, chat, and API calls
-  data/
-    vector_store.json
-  uploads/
-  requirements.txt
-  sample_document.txt
-  README.md
-  ARCHITECTURE.md
-  RAG_PIPELINE.md
-```
-
-## Installation
-
-From the project root:
-
-```cmd
-cd C:\AI_Solutions\ai-rag-mini
-pip install -r requirements.txt
-```
-
-If you prefer a virtual environment:
-
-```cmd
+```powershell
 cd C:\AI_Solutions\ai-rag-mini
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-## Llama Setup With Ollama
-
-Install Ollama:
-
-```text
-https://ollama.com
-```
-
-Pull the Llama model:
-
-```cmd
 ollama pull llama3.1
-```
-
-Set the model in Command Prompt:
-
-```cmd
-set LLM_PROVIDER=ollama
-set OLLAMA_MODEL=llama3.1
-```
-
-PowerShell version:
-
-```powershell
-$env:LLM_PROVIDER="ollama"
-$env:OLLAMA_MODEL="llama3.1"
-```
-
-The app defaults to `LLM_PROVIDER=ollama`, so setting `OLLAMA_MODEL` is usually enough.
-
-## Run The App
-
-Command Prompt:
-
-```cmd
-cd C:\AI_Solutions\ai-rag-mini
-set OLLAMA_MODEL=llama3.1
-python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-PowerShell:
-
-```powershell
-cd C:\AI_Solutions\ai-rag-mini
 $env:OLLAMA_MODEL="llama3.1"
 python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Open the app:
+Open `http://127.0.0.1:8000`, add `sample_document.txt`, then ask a question. If Ollama is unavailable, upload and retrieval still work, returning cited local evidence rather than a failed chat response.
 
-```text
-http://127.0.0.1:8000
-```
+## Container Run
 
-## Optional OpenAI Setup
-
-To use OpenAI instead of local Llama:
-
-Command Prompt:
-
-```cmd
-set LLM_PROVIDER=openai
-set OPENAI_API_KEY=your_api_key
-set OPENAI_MODEL=gpt-4o-mini
-python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-PowerShell:
+With Ollama running on the host:
 
 ```powershell
-$env:LLM_PROVIDER="openai"
-$env:OPENAI_API_KEY="your_api_key"
-$env:OPENAI_MODEL="gpt-4o-mini"
-python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+docker compose up --build
 ```
 
-## How To Use
-
-1. Start Ollama and run the FastAPI server.
-2. Open `http://127.0.0.1:8000`.
-3. Upload a `.txt`, `.md`, or `.pdf` file.
-4. Ask a question about the uploaded document.
-5. Review the answer and source snippets.
-
-Good starter questions:
-
-```text
-summarize this document
-what is this pdf about?
-what skills are mentioned?
-what are the important points?
-```
-
-## API Endpoints
-
-```text
-GET    /api/health       health check
-GET    /api/documents    list indexed documents
-POST   /api/upload       upload and index a document
-POST   /api/ask          ask a question over indexed documents
-DELETE /api/documents    clear local document index
-```
-
-## Current Limitations
-
-- Retrieval uses TF-IDF instead of real neural embeddings.
-- Storage is local JSON, not a production database.
-- There is no user authentication.
-- All documents share one local index.
-- Large PDFs may be slower because text extraction and indexing are local.
-- The app depends on Ollama running locally for Llama answers.
-
-## Roadmap
-
-- Replace TF-IDF with embedding models.
-- Add `pgvector`, Chroma, Qdrant, or Pinecone.
-- Add user login and per-user document spaces.
-- Add chat history.
-- Add citations with exact page numbers.
-- Add Docker support.
-- Add deployment instructions.
-- Add evaluation tests for answer quality.
-- Add agent tools for actions like ticket creation, database lookup, or report generation.
+The app is available at `http://127.0.0.1:8000`. The `data/` and `uploads/` directories are mounted as local volumes so an index survives a container restart.
 
 ## Architecture
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the system design, request flow, and component-level explanation.
+```text
+Browser workspace
+        |
+        v
+FastAPI API + static UI
+        |
+        +--> upload validation -> text extraction -> chunking -> local retrieval store
+        |
+        +--> question -> TF-IDF retrieval -> grounded prompt -> Ollama / OpenAI
+                                                        |
+                                                        v
+                                              answer + evidence snippets
+```
 
-See [RAG_PIPELINE.md](RAG_PIPELINE.md) for the implementation-focused RAG pipeline guide and interview explanation.
+The first retrieval implementation is intentionally inspectable TF-IDF plus cosine similarity. The first production upgrade is a pluggable embedding adapter backed by `pgvector` or OpenSearch vector search.
+
+## AWS-Native Target
+
+The Docker image keeps the application portable. The recommended AWS production shape is:
+
+```text
+CloudFront + WAF -> Application Load Balancer -> ECS Fargate (FastAPI)
+                                           |                  |
+                                           v                  v
+                                      S3 original files   Aurora PostgreSQL + pgvector
+                                           |
+                              SQS -> ECS worker or Lambda -> Amazon Bedrock
+
+CloudWatch / X-Ray / CloudTrail / Secrets Manager / KMS span the platform.
+```
+
+This is a target design, not a claim that the prototype already provisions AWS infrastructure. The current local JSON store and synchronous ingestion are intentionally narrow prototype choices.
+
+## Security Roadmap
+
+1. Prototype now: local-only data, file validation, controlled CORS, no secrets in the repository, grounded prompts, and visible sources.
+2. Before a public pilot: Cognito authentication, tenant/workspace isolation, S3 presigned uploads, malware scanning, rate limiting, audit events, structured logs, and prompt-injection evaluations.
+3. Production: IAM least privilege, private VPC subnets, KMS encryption, Secrets Manager, WAF, retrieval authorization, data retention/deletion workflows, redaction, threat modeling, and continuous RAG quality checks.
+
+## Next Build Steps
+
+- Semantic embeddings with a local model and a Bedrock provider adapter.
+- Page-level citations and retrieval quality evaluation datasets.
+- User workspaces and role-based access control.
+- Asynchronous ingestion with traces and operational metrics.
+- Infrastructure as code for the AWS target after the product contract stabilizes.
+
+## Project Layout
+
+```text
+backend/              FastAPI routes, RAG pipeline, local retrieval implementation
+frontend/             Product workspace UI
+data/                 Local index, created at runtime
+uploads/              Local uploaded files, created at runtime
+Dockerfile            Portable service image
+docker-compose.yml    Local container run
+```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) and [RAG_PIPELINE.md](RAG_PIPELINE.md) for the implementation walkthrough.

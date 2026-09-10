@@ -3,52 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI RAG Mini</title>
+    <title>Evident AI | Grounded knowledge workspace</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <main class="shell">
-      <section class="workspace">
-        <aside class="panel">
-          <div>
-            <p class="eyebrow">AI RAG Mini</p>
-            <h1>Ask your document</h1>
-            <p class="subtle">
-              Upload a text, markdown, or PDF file. The app chunks it, retrieves matching context,
-              and answers with sources.
-            </p>
-          </div>
-
-          <form id="uploadForm" class="upload-box">
-            <input id="fileInput" type="file" accept=".txt,.md,.pdf" />
-            <button type="submit">Upload</button>
-          </form>
-
-          <div>
-            <div class="row-title">
-              <h2>Documents</h2>
-              <button id="clearButton" class="ghost" type="button">Clear</button>
-            </div>
-            <div id="documents" class="documents"></div>
-          </div>
-        </aside>
-
-        <section class="chat">
-          <div id="messages" class="messages">
-            <div class="message assistant">
-              <strong>Ready.</strong>
-              <p>Upload a document, then ask a question about it.</p>
-            </div>
-          </div>
-
-          <form id="askForm" class="ask-bar">
-            <input id="questionInput" type="text" placeholder="Ask something from the document..." />
-            <button type="submit">Ask</button>
-          </form>
-        </section>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Evident AI home"><span class="brand-mark">E</span><span>Evident<em>AI</em></span></a>
+        <nav aria-label="Workspace navigation">
+          <a class="nav-link active" href="#workspace">Workspace</a>
+          <a class="nav-link" href="#evidence">Evidence</a>
+          <a class="nav-link" href="#security">Controls</a>
+        </nav>
+        <div class="sidebar-bottom"><span class="environment"><i></i> Local environment</span><p>Prototype 01<br />AWS-native target</p></div>
+      </aside>
+      <section id="workspace" class="workspace">
+        <header class="topbar"><div><p class="eyebrow">Knowledge operations</p><h1>Grounded answers, not guesses.</h1></div><div class="top-actions"><span class="status-chip">Retrieval online</span><button id="clearButton" class="text-button" type="button">Reset workspace</button></div></header>
+        <section class="metrics" aria-label="Workspace metrics"><article><span>Indexed sources</span><strong id="documentCount">0</strong><small>Private local corpus</small></article><article><span>Evidence policy</span><strong>Strict</strong><small>Answers cite retrieved context</small></article><article><span>Runtime</span><strong id="runtimeLabel">Local</strong><small>Ollama or OpenAI adapter</small></article></section>
+        <div class="work-grid">
+          <section class="conversation">
+            <div class="section-heading"><div><p class="eyebrow">Ask the corpus</p><h2>Research desk</h2></div><span>Source-aware</span></div>
+            <div id="messages" class="messages"><div class="message assistant"><div class="message-label">Evident AI</div><p>Bring in a policy, report, portfolio, or technical brief. I will retrieve the strongest evidence before I answer.</p><div class="prompt-row"><button class="prompt" type="button" data-question="Summarize this document">Summarize the document</button><button class="prompt" type="button" data-question="What are the most important points?">Find key points</button></div></div></div>
+            <form id="askForm" class="ask-bar"><input id="questionInput" type="text" autocomplete="off" placeholder="Ask a question about your knowledge base" /><button type="submit">Send</button></form>
+          </section>
+          <aside id="evidence" class="inspector">
+            <section class="ingest-card"><p class="eyebrow">Ingest</p><h2>Add source material</h2><form id="uploadForm" class="upload-box"><input id="fileInput" type="file" accept=".txt,.md,.pdf" /><label for="fileInput"><span class="upload-icon">+</span><strong>Choose a document</strong><small>PDF, Markdown, or text up to 10 MB</small></label><button type="submit">Index source</button></form></section>
+            <section class="document-section"><div class="row-title"><div><p class="eyebrow">Corpus</p><h2>Indexed sources</h2></div><span id="chunkTotal">0 chunks</span></div><div id="documents" class="documents"></div></section>
+            <section id="security" class="control-card"><p class="eyebrow">Controls</p><strong>Local-first boundary</strong><p>Files stay on this machine. Generation is routed only to the provider you configure.</p></section>
+          </aside>
+        </div>
       </section>
     </main>
-
     <script src="/static/app.js"></script>
   </body>
 </html>

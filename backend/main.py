@@ -1,3 +1,5 @@
+import os
+import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -15,11 +17,12 @@ FRONTEND_DIR = ROOT_DIR / "frontend"
 
 app = FastAPI(title="AI RAG Mini", version="0.1.0")
 rag_pipeline = RagPipeline()
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=os.getenv("CORS_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000").split(","),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -39,7 +42,12 @@ def home() -> FileResponse:
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "service": "evidence-rag",
+        "llm_provider": os.getenv("LLM_PROVIDER", "ollama"),
+        "documents": str(len(list_documents())),
+    }
 
 
 @app.get("/api/documents")
@@ -55,8 +63,11 @@ async def upload(file: UploadFile = File(...)) -> dict[str, object]:
         raise HTTPException(status_code=400, detail="Upload a .txt, .md, or .pdf file.")
 
     safe_name = Path(file.filename or "document").name
-    destination = UPLOAD_DIR / safe_name
-    destination.write_bytes(await file.read())
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Files must be 10 MB or smaller for this prototype.")
+    destination = UPLOAD_DIR / f"{uuid.uuid4().hex}{suffix}"
+    destination.write_bytes(content)
 
     try:
         result = rag_pipeline.ingest(destination, safe_name)
