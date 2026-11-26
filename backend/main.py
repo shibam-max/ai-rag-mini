@@ -6,7 +6,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .pipeline import RagPipeline, serialize_steps
 from .rag import UPLOAD_DIR, clear_store, list_documents
@@ -31,8 +31,8 @@ app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
 class AskRequest(BaseModel):
-    question: str
-    top_k: int = 4
+    question: str = Field(min_length=1, max_length=2000)
+    top_k: int = Field(default=4, ge=1, le=10)
 
 
 @app.get("/")

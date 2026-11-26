@@ -243,7 +243,7 @@ async def answer_with_llm(question: str, sources: list[dict[str, Any]]) -> str:
 
     provider = os.getenv("LLM_PROVIDER", "ollama").lower()
     if provider == "ollama":
-        return await _answer_with_ollama(question, context)
+        return await _answer_with_ollama(question, context, sources)
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -276,7 +276,11 @@ async def answer_with_llm(question: str, sources: list[dict[str, Any]]) -> str:
         return f"LLM call failed: {exc}"
 
 
-async def _answer_with_ollama(question: str, context: str) -> str:
+async def _answer_with_ollama(
+    question: str,
+    context: str,
+    sources: list[dict[str, Any]],
+) -> str:
     model = os.getenv("OLLAMA_MODEL", "llama3.1")
     base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
     prompt = (

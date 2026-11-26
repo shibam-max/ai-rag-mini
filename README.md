@@ -36,6 +36,14 @@ docker compose up --build
 
 The app is available at `http://127.0.0.1:8000`. The `data/` and `uploads/` directories are mounted as local volumes so an index survives a container restart.
 
+## Tests
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+GitHub Actions runs the test suite on Python 3.11 and 3.12.
+
 ## Architecture
 
 ```text
